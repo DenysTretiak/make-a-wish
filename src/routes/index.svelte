@@ -37,6 +37,7 @@
   let locationSummary;
   let experience;
   let showForm = false;
+  let isMagicForm = false;
   let showSuccess = false;
   let viewportHeight;
   let backLink;
@@ -417,6 +418,20 @@
         }}>
         {lang && formatMessage('Apply')}
       </button>
+      <button
+        class="submit"
+        on:click={() => {
+          showForm = true;
+          isMagicForm = true;
+          const offset = _formLinkRef.offsetTop;
+          window.scroll({
+            top: y > 50 ? offset - 100 : 0,
+            left: 0,
+            behavior: 'smooth'
+          });
+        }}>
+        {lang && formatMessage('Magic apply')}
+      </button>
       <div class="favorite-toggler-wrapper">
         <span
           class:favorite={job.isFavorite}
@@ -435,14 +450,17 @@
     <section class="form-wrapper">
       <ApplyForm
         bind:job
+        bind:isMagicForm
         bind:message={applyMessage}
         handleSuccess={() => {
           spell = 'Expecto Patronum!';
           doMagic = true;
           showForm = false;
+          isMagicForm = false;
         }}
         handleDismiss={() => {
           showForm = false;
+          isMagicForm = false;
         }} />
     </section>
   {/if}

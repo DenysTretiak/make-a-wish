@@ -1,19 +1,18 @@
 <script>
   import formatMessage from "format-message";
-  import { onMount } from "svelte";
   import translations from "../locales";
-  import Userpic from "./Userpic.svelte";
   import Spinner from "./Spinner.svelte";
+  import Switch from './Switch.svelte';
   import { profile } from "../stores";
-  import { getJob } from "../services/jobs";
-  import { getCookie } from "../utils/common-utils";
   export let handleDismiss;
   export let handleSuccess;
   export let message = "";
+  export let isMagicForm = false;
   let formRef;
   let fileInputRef;
   let lang;
   let loading = false;
+  let acceptTerms = false;
 
   $: lang = $profile.lang || "ru";
 
@@ -239,35 +238,37 @@
         <textarea
           id="message"
           name="message"
+          placeholder = {isMagicForm ? 'Type a spell…' : null}
           class:faded={loading}
           bind:value={message} />
-
-        <p class="attachment" class:faded={loading}>
-          {#if $profile.cv_name}
-            <i
-              class="icon-trash-empty trailing"
-              on:click={() => {
-                $profile.cv_url = null;
-                $profile.cv_name = null;
-                fileInputRef.value = null;
-              }} />
-            <i class="icon-thumbs-up" />
-            <span>
-              {#if $profile.cv_url}
-                <a href={$profile.cv_url}>{$profile.cv_name}</a>
-              {:else}{$profile.cv_name}{/if}
-            </span>
-          {:else}
-            <span
-              class="clickable"
-              on:click={() => {
-                fileInputRef.click();
-              }}>
-              <i class="icon-doc-text" />
-              {formatMessage('Upload resume')}
-            </span>
-          {/if}
-        </p>
+        {#if !isMagicForm}
+          <p class="attachment" class:faded={loading}>
+            {#if $profile.cv_name}
+              <i
+                class="icon-trash-empty trailing"
+                on:click={() => {
+                  $profile.cv_url = null;
+                  $profile.cv_name = null;
+                  fileInputRef.value = null;
+                }} />
+              <i class="icon-thumbs-up" />
+              <span>
+                {#if $profile.cv_url}
+                  <a href={$profile.cv_url}>{$profile.cv_name}</a>
+                {:else}{$profile.cv_name}{/if}
+              </span>
+            {:else}
+              <span
+                class="clickable"
+                on:click={() => {
+                  fileInputRef.click();
+                }}>
+                <i class="icon-doc-text" />
+                {formatMessage('Upload resume')}
+              </span>
+            {/if}
+          </p>
+        {/if}
         {#if loading}
           <div class="loader-wrapper">
             <Spinner />
@@ -275,6 +276,11 @@
         {/if}
       </div>
     </div>
+    {#if isMagicForm}
+      <Switch bind:checked={acceptTerms}></Switch>
+        <br>
+      {acceptTerms}
+    {/if}
     <div class="message-actions" class:hidden={loading}>
       <button name="job_apply" id="job_apply" on:click={_handleSubmit}>
         {formatMessage('Open contacts and send')}

@@ -1,10 +1,8 @@
 <script>
   import ClickOutside from "svelte-click-outside";
   import formatMessage from "format-message";
-  import { onMount } from "svelte";
   import translations from "../locales";
   import Userpic from "./Userpic.svelte";
-  import Switch from "./Switch.svelte";
 
   export let user = { active: true };
   export let lang = "ru";
@@ -37,7 +35,7 @@
 </script>
 
 <style lang="scss">
-  @import "../../styles/theme.scss";
+  @import "../styles/theme.scss";
 
   .userpic-wrapper {
     display: block;
