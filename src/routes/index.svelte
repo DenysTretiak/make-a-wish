@@ -468,6 +468,7 @@
     <section class="form-wrapper">
       <ApplyForm
         bind:job
+        bind:isMagicForm
         bind:message={applyMessage}
         bind:showSuccess
         showMagicForm={showMagicForm}
