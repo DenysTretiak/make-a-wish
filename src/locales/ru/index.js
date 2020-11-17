@@ -2,6 +2,7 @@ export default {
   "All jobs": "Все вакансии",
   Published: "Опубликовано",
   Apply: "Откликнуться",
+  "Magic apply": "Ридикулус",
   "Add to favorites": "Добавить в избранное",
   "In favorites": "В избранном",
   "About company": "Про компанию",
@@ -15,5 +16,7 @@ export default {
   "What will the employer see?": "Какие контактные данные увидит работодатель?",
   "Set it": "Укажите",
   "in settings": "в настройках",
-  "Mischief Managed!": "Шалость удалась",
+  "Mischief Managed!": "Шалость удалась",  
+  Agreement: "Торжественно клянусь, что замышляю шалость, и только шалость!",
+  Save: "Сохранить"
 };

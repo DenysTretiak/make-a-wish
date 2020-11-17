@@ -2,19 +2,13 @@
   import Spinner from "./Spinner.svelte";
   export let ref;
   export let query;
-  export let handleSubmit;
+  export let handleKeyup;
   export let handleReset;
   export let loading = false;
-
-  const _handleKeydown = e => {
-    if (e.target == ref && query && e.code == "Enter") {
-      handleSubmit();
-    }
-  };
 </script>
 
 <style lang="scss">
-  @import "../../styles/theme.scss";
+  @import "../styles/theme.scss";
   input {
     display: block;
     margin: 0;
@@ -25,7 +19,6 @@
     font-size: 12px;
     border-radius: 3px;
     border: 0;
-    background: $graphite;
   }
   input + i {
     color: $mediumText;
@@ -56,7 +49,7 @@
   type="text"
   bind:this={ref}
   bind:value={query}
-  on:keydown={_handleKeydown} />
+  on:keyup={handleKeyup} />
 <i class="icon-search" />
 
 <aside>

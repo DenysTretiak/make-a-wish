@@ -37,6 +37,7 @@
   let locationSummary;
   let experience;
   let showForm = false;
+  let showMagicForm = false;
   let showSuccess = false;
   let viewportHeight;
   let backLink;
@@ -197,6 +198,10 @@
     .submit {
       display: inline-block;
     }
+
+    .magic-submit {
+      margin-left: 10px;
+    }
   }
   .form-wrapper {
     position: relative;
@@ -308,6 +313,11 @@
     h2 {
       font-size: 24px;
     }
+
+    .submit + .favorite-toggler-wrapper {
+      margin-left: 0;
+      margin-top: 10px;
+    }
   }
   @media (max-width: $medium) {
     main.page-wrapper {
@@ -336,10 +346,7 @@
         width: 100%;
       }
     }
-    .submit + .favorite-toggler-wrapper {
-      margin-left: 0;
-      margin-top: 10px;
-    }
+
     .favorite-toggler-wrapper {
       width: 100%;
       margin-left: 0;
@@ -348,6 +355,16 @@
     }
     .page-footer-wrapper.spaced {
       padding-bottom: 130px;
+    }
+
+    .submit-wrapper {
+      .submit {
+        margin-top: 10px;
+      }
+
+    .magic-submit {
+      margin-left: 0;
+    }
     }
   }
 </style>
@@ -378,10 +395,12 @@
       </h2>
     {/if}
     <!-- SUCCESS MESSAGE-->
-    <p class="success-message" in:fly={{ y: 20, duration: 300, delay: 300 }}>
-      <i class="icon-ok" />
-      <span>{lang && formatMessage('Mischief Managed!')}</span>
-    </p>
+    {#if showSuccess}
+      <p class="success-message" in:fly={{ y: 20, duration: 300, delay: 300 }}>
+        <i class="icon-ok" />
+        <span>{lang && formatMessage('Mischief Managed!')}</span>
+      </p>
+    {/if}
     <!---->
     <ul class="summary">
       {#if job.language && job.language.name}
@@ -417,6 +436,20 @@
         }}>
         {lang && formatMessage('Apply')}
       </button>
+      <button
+        class="submit magic-submit"
+        on:click={() => {
+          showForm = true;
+          showMagicForm = true;
+          const offset = _formLinkRef.offsetTop;
+          window.scroll({
+            top: y > 50 ? offset - 100 : 0,
+            left: 0,
+            behavior: 'smooth'
+          });
+        }}>
+        {lang && formatMessage('Magic apply')}
+      </button>
       <div class="favorite-toggler-wrapper">
         <span
           class:favorite={job.isFavorite}
@@ -436,13 +469,18 @@
       <ApplyForm
         bind:job
         bind:message={applyMessage}
+        bind:showSuccess
+        showMagicForm={showMagicForm}
         handleSuccess={() => {
           spell = 'Expecto Patronum!';
           doMagic = true;
           showForm = false;
+          showMagicForm = false;
+          applyMessage = '';
         }}
         handleDismiss={() => {
           showForm = false;
+          showMagicForm = false;
         }} />
     </section>
   {/if}

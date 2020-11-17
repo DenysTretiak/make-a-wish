@@ -13,7 +13,6 @@
   export let handleMore = null;
   export let isAllDismissable = false;
   export let centered = false;
-  export let extraParams = {};
   export let loading = false;
 
   const _isActive = item => {
@@ -25,7 +24,7 @@
 <style lang="scss">
   ul {
     display: inline-block;
-    margin: 0;
+    margin: 0 0 20px 0;
     padding: 0;
     text-align: left;
 
@@ -53,9 +52,9 @@
       <Tag
         color={item.value && _isActive(item) ? activeColor : color}
         textColor={item.value && _isActive(item) ? activeTextColor : textColor}
-        handleClick={() => handleClick({ ...item, ...extraParams })}
+        handleClick={() => handleClick(item, index)}
         handleDismiss={(isAllDismissable || _isActive(item)) && handleDismiss && (() => handleDismiss(
-              { ...item, ...extraParams }
+              item, index 
             ))}
         active={item.value && _isActive(item)}>
         {#if item.icon}

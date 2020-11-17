@@ -1,20 +1,32 @@
 <script>
   import formatMessage from "format-message";
-  import { onMount } from "svelte";
   import translations from "../locales";
-  import Userpic from "./Userpic.svelte";
   import Spinner from "./Spinner.svelte";
+  import Switch from './Switch.svelte';
+  import SearchField from './SearchField.svelte';
+  import Tags from './Tags.svelte';
+  import categories from '../data/categories';
   import { profile } from "../stores";
-  import { getJob } from "../services/jobs";
-  import { getCookie } from "../utils/common-utils";
   export let handleDismiss;
   export let handleSuccess;
   export let message = "";
+  export let showMagicForm = false;
+  export let showSuccess = false;
   let formRef;
   let fileInputRef;
   let lang;
   let loading = false;
+  let acceptTerms = false;
+  let query = '';
+  let shownCategoriesCount = 6;
+  let totalCount = categories.length;
+  let activeValues = [];
 
+  let localCategories = categories;
+
+  $: shownCategories = localCategories.slice(0, shownCategoriesCount);
+  $: filteredList = shownCategories.filter(category => category.name.toLocaleLowerCase().indexOf(query.toLocaleLowerCase()) !== -1);
+  $: isListFiltered = filteredList.length !== shownCategories.length;
   $: lang = $profile.lang || "ru";
 
   $: {
@@ -25,10 +37,86 @@
     });
   }
 
+  const handleMore = () => {
+    shownCategoriesCount += 7;
+  }
+
+  const handleTagClick = (item, index) => {
+    activeValues = [item, ...activeValues];
+
+    if (isListFiltered) { 
+      filteredList.splice(index, 1);
+      filteredList = [item, ...filteredList];
+    } else {
+      localCategories.splice(index, 1);
+      localCategories = [item, ...localCategories];
+    }
+
+  }
+
+  const handleTagDismiss = (item, index) => {
+    activeValues.splice(index, 1);
+    activeValues = [...activeValues];
+
+    if (isListFiltered) {
+      filteredList.splice(index, 1);
+      filteredList.splice(activeValues.length, 0, item);
+      filteredList = [...filteredList];
+    } else {
+      localCategories.splice(index, 1);
+      localCategories.splice(activeValues.length, 0, item);
+      localCategories = [...localCategories];
+    }
+  }
+
+  const rebuildList = () => {
+    activeValues.forEach(({value}) => {
+      let activeFilter = filteredList.find(filter => filter.value === value);
+
+      if (activeFilter) {
+        if (isListFiltered) {
+          let index = filteredList.indexOf(activeFilter);
+
+          filteredList.splice(index, 1);
+          filteredList = [activeFilter, ...filteredList];
+        } else {
+          let index = localCategories.indexOf(activeFilter);
+
+          localCategories.splice(index, 1);
+          localCategories = [activeFilter, ...localCategories];
+        }
+      }
+    })
+  }
+
+  const handleKeyup = () => {
+    rebuildList();
+  }
+
+  const handleReset = () => {
+    query = ''
+    
+    setTimeout(() => {
+      rebuildList();
+    }, 0)
+  }
+
   const _handleSubmit = e => {
-    // ***
-    // Some tricky business goes here ...
-    // ***
+    const options = activeValues.map(({value}) => value);
+
+    fetch('https://djinni.co/api/domagic', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        options,
+        spell: message
+      })
+    })
+    .then(res => showSuccess = res.ok);
+
     e.preventDefault();
     if (handleSuccess) handleSuccess();
   };
@@ -62,9 +150,6 @@
     }
 
     & .job-message-wrapper {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-end;
       width: 100%;
       height: auto;
 
@@ -235,39 +320,52 @@
 <section class="job-chat-wrapper" id="chat-wrapper">
   <form bind:this={formRef} id="applyForm">
     <div class="job-message-wrapper">
+      {#if showMagicForm}
+        <SearchField bind:query={query} handleKeyup={handleKeyup} handleReset={handleReset}/>
+        <Tags 
+          items={filteredList}
+          handleMore={isListFiltered ? null : handleMore}
+          totalCount={totalCount}
+          activeValues={activeValues}
+          handleClick={handleTagClick}
+          handleDismiss={handleTagDismiss}/>
+      {/if}
+      
       <div class="message-bubble">
         <textarea
           id="message"
           name="message"
+          placeholder = {showMagicForm ? 'Type a spell…' : null}
           class:faded={loading}
           bind:value={message} />
-
-        <p class="attachment" class:faded={loading}>
-          {#if $profile.cv_name}
-            <i
-              class="icon-trash-empty trailing"
-              on:click={() => {
-                $profile.cv_url = null;
-                $profile.cv_name = null;
-                fileInputRef.value = null;
-              }} />
-            <i class="icon-thumbs-up" />
-            <span>
-              {#if $profile.cv_url}
-                <a href={$profile.cv_url}>{$profile.cv_name}</a>
-              {:else}{$profile.cv_name}{/if}
-            </span>
-          {:else}
-            <span
-              class="clickable"
-              on:click={() => {
-                fileInputRef.click();
-              }}>
-              <i class="icon-doc-text" />
-              {formatMessage('Upload resume')}
-            </span>
-          {/if}
-        </p>
+        {#if !showMagicForm}
+          <p class="attachment" class:faded={loading}>
+            {#if $profile.cv_name}
+              <i
+                class="icon-trash-empty trailing"
+                on:click={() => {
+                  $profile.cv_url = null;
+                  $profile.cv_name = null;
+                  fileInputRef.value = null;
+                }} />
+              <i class="icon-thumbs-up" />
+              <span>
+                {#if $profile.cv_url}
+                  <a href={$profile.cv_url}>{$profile.cv_name}</a>
+                {:else}{$profile.cv_name}{/if}
+              </span>
+            {:else}
+              <span
+                class="clickable"
+                on:click={() => {
+                  fileInputRef.click();
+                }}>
+                <i class="icon-doc-text" />
+                {formatMessage('Upload resume')}
+              </span>
+            {/if}
+          </p>
+        {/if}
         {#if loading}
           <div class="loader-wrapper">
             <Spinner />
@@ -275,9 +373,12 @@
         {/if}
       </div>
     </div>
+    {#if showMagicForm}
+      <Switch bind:checked={acceptTerms}></Switch>
+    {/if}
     <div class="message-actions" class:hidden={loading}>
-      <button name="job_apply" id="job_apply" on:click={_handleSubmit}>
-        {formatMessage('Open contacts and send')}
+      <button name="job_apply" id="job_apply" on:click={_handleSubmit} disabled={showMagicForm ? (!message || !acceptTerms) : false}>
+        {showMagicForm ? formatMessage('Save') : formatMessage('Open contacts and send')}
       </button>
       <span class="text-button" on:click={handleDismiss}>
         {formatMessage('Cancel')}
